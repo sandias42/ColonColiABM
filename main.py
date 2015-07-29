@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import itertools
 import random
 import copy
+import numpy as np
+from Cell import *
 
 class Schelling:
     def __init__(self, width, height, empty_ratio, similarity_threshold, n_iterations, races = 2):
