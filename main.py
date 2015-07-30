@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import itertools
 import random
 import copy
-import numpy as np
+#import numpy as np
 from cell import *
 from pydispatch import dispatcher
 
@@ -15,33 +15,59 @@ class Space(object):
 
 #CELL COORDINATES ARE (LAYER, WIDTH (HORIZONTAL), HEIGHT (VERTICAL)) S.O. to Ethan Alley
 class Colon:
-    def __init__(self, layers, width, height, inner_width, inner_height, healthy_ratio, empty_ratio):
+    def __init__(self, layers, width, height, inner_width, inner_height, cancer_ratio, occupied_ratio):
         self.layers = layers
         self.width = width
         self.height = height
         self.inner_width = inner_width # Inner describes the inner colon cavity dimensions
         self.inner_height = inner_height
-        self.healthy_ratio = healthy_ratio # Proportion of cells that are healthy
-        self.empty_ratio = empty_ratio # Proportion of all spaces that are empty
-        self.agents = {} # Agents contains the positions and types of all cells currently in the colon
+        self.cancer_ratio = cancer_ratio # Proportion of cells that are cancerous
+        self.occupied_ratio = occupied_ratio # Proportion of all spaces in the COLON WALL that are occupied
+        self.spaces = {} # Spaces contains the positions and types of all cells currently in the colon
+        self.ids = xrange(100000000) # Cell ID generator, TODO: Figure out how to endlessly generate unique IDs without breaking the bank
+        self.current_id = 0 #Tracks current index of id generated from self.ids
 
-    # Randomly distributes cells in the colon
+    # Randomly distributes cells in the colon, final spaces tuple formal will contain a Space record object followed by a "u", "c" or "h" designating unoccupied, cancer or healthy cekk location respectively
     def populate(self):
-        self.
-        self.all_spaces = list(itertools.product(range(self.layers),range(self.width),range(self.height)))
-        self.
-        random.shuffle(self.all_spaces)
+        self.inner_spaces = list(itertools.product(xrange(self.layers),xrange(int((self.width-self.inner_width)/2), int(self.width-(self.width+self.inner_width)/2)),xrange(int((self.height-self.inner_height)/2),int(self.height-(self.height+self.inner_height)/2))))
+        
+        for i in len(self.inner_spaces):
+            self.inner_spaces[i] = Space(*self.inner_spaces[i])
 
-        self.n_empty = int( self.empty_ratio * len(self.all_houses) )
-        self.empty_houses = self.all_houses[:self.n_empty]
+        # Assign unoccupied spaces in inner tube of colon
+        for pos in self.inner_spaces:
+            self.spaces = dict(
+                self.spaces.items() +
+                dict(pos, None)
+            )
 
-        self.remaining_houses = self.all_houses[self.n_empty:]
-        houses_by_race = [self.remaining_houses[i::self.races] for i in range(self.races)]
-        for i in range(self.races):
-            #create agents for each race
-            self.agents = dict(
-                self.agents.items() +
-                dict(zip(houses_by_race[i], [i+1]*len(houses_by_race[i]))).items()
+        self.outer_spaces = list(itertools.product(xrange(self.layers),itertools.chain(xrange(int((self.width-self.inner_width)/2)),xrange(int(self.width-(self.width+self.inner_width)/2), self.width)),itertools.chain(xrange(int((self.height-self.inner_height)/2)),xrange(int(self.height-(self.height+self.inner_height)/2),self.height))))
+        random.shuffle(self.outer_spaces)
+
+            for i in len(self.outer_spaces):
+            self.outer_spaces[i] = Space(*self.outer_spaces[i])
+
+        # Assign unoccupied spaces in colon wall region
+        self.n_occupied = int(self.occupied_ratio*len(self.outer_spaces))
+        for pos in itertools.islice(self.outer_spaces, self.n_occupied, None):
+            self.spaces = dict(
+                self.spaces.items() +
+                dict(pos, None)
+            )
+
+        # Assign spaces in colon wall region to each cell type
+        self.n_cancer = int(self.cancer_ratio*self.n_occupied)
+        for pos in itertools.islice(self.outer_spaces, self.n_cancer):
+            self.spaces = dict(
+                self.spaces.items() +
+                dict(pos, Cancer(pos, self.ids[self.current_id]))
+                self.current_id += 1
+            )
+        for pos in itertools.islice(self.outer_spaces, self.n_cancer, self.n_occupied):
+            self.spaces = dict(
+                self.spaces.items() +
+                dict(pos, Healthy(pos, self.ids[self.current_id]))
+                self.current_id += 1
             )
 
     def is_unsatisfied(self, x, y):
