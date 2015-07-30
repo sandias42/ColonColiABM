@@ -6,20 +6,31 @@ import numpy as np
 from cell import *
 from pydispatch import dispatcher
 
+#Record object for each space in the colon, xcoord is height position, ycoord is width position
+class Space(object):
+    def __init__(self, layer=None, xcoord=None, ycoord=None):
+        self.layer = layer
+        self.width = width
+        self.height = height
+
+#CELL COORDINATES ARE (LAYER, WIDTH (HORIZONTAL), HEIGHT (VERTICAL)) S.O. to Ethan Alley
 class Colon:
     def __init__(self, layers, width, height, inner_width, inner_height, healthy_ratio, empty_ratio):
         self.layers = layers
         self.width = width
         self.height = height
-        self.inner_width = inner_width
+        self.inner_width = inner_width # Inner describes the inner colon cavity dimensions
         self.inner_height = inner_height
-        self.healthy_ratio = healthy_ratio
-        self.empty_houses = []
-        self.agents = {}
+        self.healthy_ratio = healthy_ratio # Proportion of cells that are healthy
+        self.empty_ratio = empty_ratio # Proportion of all spaces that are empty
+        self.agents = {} # Agents contains the positions and types of all cells currently in the colon
 
+    # Randomly distributes cells in the colon
     def populate(self):
-        self.all_houses = list(itertools.product(range(self.width),range(self.height)))
-        random.shuffle(self.all_houses)
+        self.
+        self.all_spaces = list(itertools.product(range(self.layers),range(self.width),range(self.height)))
+        self.
+        random.shuffle(self.all_spaces)
 
         self.n_empty = int( self.empty_ratio * len(self.all_houses) )
         self.empty_houses = self.all_houses[:self.n_empty]
@@ -110,3 +121,15 @@ class Colon:
     self.empty_houses.append((x, y))
 
     def plot(self):
+        fig, ax = plt.subplots()
+        #If you want to run the simulation with more than 7 colors, you should set agent_colors accordingly
+        agent_colors = {1:'b', 2:'r', 3:'g', 4:'c', 5:'m', 6:'y', 7:'k'}
+        for agent in self.agents:
+            ax.scatter(agent[0]+0.5, agent[1]+0.5, color=agent_colors[self.agents[agent]])
+
+        ax.set_title(title, fontsize=10, fontweight='bold')
+        ax.set_xlim([0, self.width])
+        ax.set_ylim([0, self.height])
+        ax.set_xticks([])
+        ax.set_yticks([])
+        plt.savefig(file_name)
