@@ -8,11 +8,10 @@ from pydispatch import dispatcher
 
 #Record object for each space in the colon, xcoord is height position, ycoord is width position
 class Space(object):
-    # TODO argument names don't match variable assignments -EA Why not x, y z? Less typing
-    def __init__(self, layer=None, xcoord=None, ycoord=None):
+    def __init__(self, layer=None, x=None, y=None):
         self.layer = layer
-        self.width = width
-        self.height = height
+        self.x = x
+        self.y = y
 
 #CELL COORDINATES ARE (LAYER, WIDTH (HORIZONTAL), HEIGHT (VERTICAL)) S.O. to Ethan Alley
 class Colon:
@@ -28,10 +27,9 @@ class Colon:
         self.ids = xrange(100000000) # Cell ID generator, TODO: Figure out how to endlessly generate unique IDs without breaking the bank
         self.current_id = 0 #Tracks current index of id generated from self.ids
 
-    # Randomly distributes cells in the colon, final spaces tuple formal will contain a Space record object followed by a "u", "c" or "h" designating unoccupied, cancer or healthy cekk location respectively
-    # Why not a tuple with space and then an instance of the Cell object itself? How will the instances be stored if not in the spaces -EA (Actually I see below)
+    # Randomly distributes cells in the colon, final spaces tuple format will contain a Space record object followed by a Cell Object or None if the Space is empty
     def populate(self):
-        self.inner_spaces = list(itertools.product(xrange(self.layers),xrange(int((self.width-self.inner_width)/2), int(self.width-(self.width+self.inner_width)/2)),xrange(int((self.height-self.inner_height)/2),int(self.height-(self.height+self.inner_height)/2))))
+        self.inner_spaces = list(itertools.product(xrange(self.layers),xrange(int((self.width-self.inner_width)/2), int(self.width-(self.width-self.inner_width)/2)),xrange(int((self.height-self.inner_height)/2),int(self.height-(self.height-self.inner_height)/2))))
         
         for i in len(self.inner_spaces):
             self.inner_spaces[i] = Space(*self.inner_spaces[i])
@@ -43,7 +41,7 @@ class Colon:
                 dict(pos, None)
             )
 
-        self.outer_spaces = list(itertools.product(xrange(self.layers),itertools.chain(xrange(int((self.width-self.inner_width)/2)),xrange(int(self.width-(self.width+self.inner_width)/2), self.width)),itertools.chain(xrange(int((self.height-self.inner_height)/2)),xrange(int(self.height-(self.height+self.inner_height)/2),self.height))))
+        self.outer_spaces = list(itertools.product(xrange(self.layers),self.width,itertools.chain(xrange(int((self.height-self.inner_height)/2)),xrange(int(self.height-(self.height-self.inner_height)/2),self.height))))+list(itertools.product(xrange(self.layers),itertools.chain(xrange(int((self.width-self.inner_width)/2)),xrange(int(self.width-(self.width-self.inner_width)/2))),xrange(int((self.height-self.inner_height)/2),int(self.height-(self.height-self.inner_height)/2))))
         random.shuffle(self.outer_spaces)
 
             for i in len(self.outer_spaces):
@@ -62,13 +60,13 @@ class Colon:
         for pos in itertools.islice(self.outer_spaces, self.n_cancer):
             self.spaces = dict(
                 self.spaces.items() +
-                dict(pos, Cancer(pos, self.ids[self.current_id]))
+                dict(pos, Cancer(pos, self.ids[self.current_id], self))
                 self.current_id += 1
             )
         for pos in itertools.islice(self.outer_spaces, self.n_cancer, self.n_occupied):
             self.spaces = dict(
                 self.spaces.items() +
-                dict(pos, Healthy(pos, self.ids[self.current_id]))
+                dict(pos, Healthy(pos, self.ids[self.current_id], self))
                 self.current_id += 1
             )
 
