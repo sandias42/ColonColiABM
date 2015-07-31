@@ -8,6 +8,7 @@ from pydispatch import dispatcher
 
 #Record object for each space in the colon, xcoord is height position, ycoord is width position
 class Space(object):
+    # TODO argument names don't match variable assignments -EA Why not x, y z? Less typing
     def __init__(self, layer=None, xcoord=None, ycoord=None):
         self.layer = layer
         self.width = width
@@ -28,6 +29,7 @@ class Colon:
         self.current_id = 0 #Tracks current index of id generated from self.ids
 
     # Randomly distributes cells in the colon, final spaces tuple formal will contain a Space record object followed by a "u", "c" or "h" designating unoccupied, cancer or healthy cekk location respectively
+    # Why not a tuple with space and then an instance of the Cell object itself? How will the instances be stored if not in the spaces -EA (Actually I see below)
     def populate(self):
         self.inner_spaces = list(itertools.product(xrange(self.layers),xrange(int((self.width-self.inner_width)/2), int(self.width-(self.width+self.inner_width)/2)),xrange(int((self.height-self.inner_height)/2),int(self.height-(self.height+self.inner_height)/2))))
         
