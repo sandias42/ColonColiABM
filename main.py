@@ -3,7 +3,7 @@ import itertools
 import random
 import copy
 #import numpy as np
-from cell import *
+from cell import * # BZ - For the time being I've left script import statements in this format to distinguish them from actual packages/modules
 from pydispatch import dispatcher
 
 #Record object for each space in the colon, xcoord is height position, ycoord is width position

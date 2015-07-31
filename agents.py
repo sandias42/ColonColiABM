@@ -10,6 +10,7 @@ the methods and values of the class itself.
 
 import numpy as np
 import pydispatch
+from main import * # BZ - For the time being I've left script import statements in this format to distinguish them from actual packages/modules
 
 class Agent:
     # An agent has a unique position and id to interact with World
@@ -29,8 +30,8 @@ class Cell(Agent):
         self.age = np.random.randint(100)
         # Counter to measure the time since last cell division
         self.puberty = 50 #arbitrary
-        self.treplicate = np.random.randint(self.puberty)#arbitrary
-        self.Colon = Colon
+        self.treplicate = np.random.randint(self.puberty) #arbitrary
+        self.colon = Colon
     # A function which checks if the cells environment is appropriate for
     # growth and returns a Bool, True if Cell should live False otherwise
     # Should be overwritten in subclasses!
@@ -40,24 +41,24 @@ class Cell(Agent):
         return self.age
     def die(self):
         # TODO Colon function which deletes the Cell instance and replaces it
-        # None
-        self.Colon.removeme(self)
+        # with None
+        self.colon.remove(self)
     # The age at which a Cell should attempt to replicate()
     def replicate(self):
         # as used here, neighbors should be a dictionary
-        neighbors = self.Colon.getneighbors(self.pos)
-        emptyneighbors= []
+        neighbors = self.colon.getNeighbors(self.pos)
+        emptyNeighbors= []
         for pos, obj in neighbors.iteritems():
             if obj == None:
-                emptyneighbors.append(pos)
+                emptyNeighbors.append(pos)
         # Colon function which generates a new Cell in the space of the
         # first argument, and takes the Cell itself as the second so the
         # function can make child cell the same type as parent (and track
         # reproduction later if desired)
-        if emptyneighbors.len() == 0:
+        if emptyNeighbors.len() == 0:
             return
         else:
-            self.Colon.spawnNew(np.random.shuffle(emptyneighbors)[0],self)
+            self.colon.spawnNew(np.random.shuffle(emptyNeighbors)[0],self)
             self.treplicate = 0
     # Handles the timestep event 
     # TODO figure out pydispatcher and listeners
@@ -71,13 +72,13 @@ class Cell(Agent):
             self.treplicate += 1
 
 class Healthy(Cell):
-    def __init__(self,pos,ID,Colon):
+    def __init__(self,pos,ID,colon):
         # Keeping arbitrary Cell defaults
-        super(Healthy,self,pos,ID,Colon).__init__()
+        super(Healthy,self,pos,ID,colon).__init__()
         # Change this to change how many neighbors are necessary for survival
         self.numNeighborsReq = 13
     def lifeCondition(self):
-        neighbors = self.Colon.getneighbors(self.pos)
+        neighbors = self.colon.getneighbors(self.pos)
         numhealthy = 0
         for obj in neighbors.itervalues():
             if isinstance(obj,Healthy):
@@ -88,9 +89,9 @@ class Healthy(Cell):
             return False
             
 class Cancer(Cell):
-    def __init__(self,pos,ID,Colon):
+    def __init__(self,pos,ID,colon):
         # Keeping super methods
-        super(Cancer,self,pos,ID,Colon).__init__()
+        super(Cancer,self,pos,ID,colon).__init__()
         self.lifespan = 1000
         self.puberty = 20
     
