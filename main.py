@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import itertools
 import random
 import copy
+import math
 #import numpy as np
 from cell import * # BZ - For the time being I've left script import statements in this format to distinguish them from actual packages/modules
 from pydispatch import dispatcher
@@ -25,9 +26,10 @@ class Colon:
         self.occupied_ratio = occupied_ratio # Proportion of all spaces in the COLON WALL that are occupied
         self.spaces = {} # Spaces contains the positions and types of all cells currently in the colon
         self.ids = xrange(100000000) # Cell ID generator, TODO: Figure out how to endlessly generate unique IDs without breaking the bank
-        self.current_id = 0 #Tracks current index of id generated from self.ids
+        self.current_id = 0 # Tracks current index of id generated from self.ids
+        self.sender = self # The sender of a timestep signal is identified as the Colon object itself
 
-    # Randomly distributes cells in the colon, final spaces tuple format will contain a Space record object followed by a Cell Object or None if the Space is empty
+    # Randomly distributes cells in the colon, final spaces tuple format will contain a Space record object followed by a Cell object or None if the Space is empty
     def populate(self):
         self.inner_spaces = list(itertools.product(xrange(self.layers),xrange(int((self.width-self.inner_width)/2), int(self.width-(self.width-self.inner_width)/2)),xrange(int((self.height-self.inner_height)/2),int(self.height-(self.height-self.inner_height)/2))))
         
@@ -36,10 +38,7 @@ class Colon:
 
         # Assign unoccupied spaces in inner tube of colon
         for pos in self.inner_spaces:
-            self.spaces = dict(
-                self.spaces.items() +
-                dict(pos, None)
-            )
+            self.spaces = dict(self.spaces, **dict(pos, None))
 
         self.outer_spaces = list(itertools.product(xrange(self.layers),self.width,itertools.chain(xrange(int((self.height-self.inner_height)/2)),xrange(int(self.height-(self.height-self.inner_height)/2),self.height))))+list(itertools.product(xrange(self.layers),itertools.chain(xrange(int((self.width-self.inner_width)/2)),xrange(int(self.width-(self.width-self.inner_width)/2))),xrange(int((self.height-self.inner_height)/2),int(self.height-(self.height-self.inner_height)/2))))
         random.shuffle(self.outer_spaces)
@@ -50,25 +49,31 @@ class Colon:
         # Assign unoccupied spaces in colon wall region
         self.n_occupied = int(self.occupied_ratio*len(self.outer_spaces))
         for pos in itertools.islice(self.outer_spaces, self.n_occupied, None):
-            self.spaces = dict(
-                self.spaces.items() +
-                dict(pos, None)
-            )
+            self.spaces = dict(self.spaces, **dict(pos, None))
 
         # Assign spaces in colon wall region to each cell type
         self.n_cancer = int(self.cancer_ratio*self.n_occupied)
         for pos in itertools.islice(self.outer_spaces, self.n_cancer):
-            self.spaces = dict(
-                self.spaces.items() +
-                dict(pos, Cancer(pos, self.ids[self.current_id], self))
+            self.spaces = dict(self.spaces, **dict(pos, Cancer(pos, self.ids[self.current_id], self)))
                 self.current_id += 1
             )
         for pos in itertools.islice(self.outer_spaces, self.n_cancer, self.n_occupied):
-            self.spaces = dict(
-                self.spaces.items() +
-                dict(pos, Healthy(pos, self.ids[self.current_id], self))
+            self.spaces = dict(self.spaces, **dict(pos, Healthy(pos, self.ids[self.current_id], self)))
                 self.current_id += 1
             )
+
+    def getNeighbors(self, pos):
+        neighbors = {}
+        for t in self.spaces.iteritems():
+            if (abs(t[0].layer - pos.layer) <= 1) and (abs(t[0].x - pos.x) <=1 ) and (abs(t[0].y - pos.y) <= 1) and (t[0] != pos):
+                neighbors = dict(neighbors, **dict(t))
+                # edges tracks the number of sides of a space that are in contact with the "edge" of the colon (i.e. on the outer surface of the colon wall)
+                edges = abs(t[0].layer%layers) + abs(t[0].x%width) + abs(t[0].y%height)
+                if edges < 3:
+                    if len(neighbors) == 7 + int(math.ceil(float(edges)/2.0))*4 + int(math.floor(float(edges)/2.0))*6:
+                        return neighbors
+                elif len(neighbors) == 26:
+                    return neighbors
 
     def is_unsatisfied(self, x, y):
         race = self.agents[(x,y)]
@@ -159,3 +164,10 @@ class Colon:
         ax.set_xticks([])
         ax.set_yticks([])
         plt.savefig(file_name)
+
+# Implementation goes here
+c = Colon(25, 500, 500, 100, 100, 0.3, 0.85)
+c.populate()
+# TODO: Write method that returns true if at least one E. coli object is alive in colon
+while(Coli.is_alive()):
+    dispatcher.send( signal="r", sender=c.sender )

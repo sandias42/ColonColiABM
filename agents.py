@@ -78,7 +78,7 @@ class Healthy(Cell):
         # Change this to change how many neighbors are necessary for survival
         self.numNeighborsReq = 13
     def lifeCondition(self):
-        neighbors = self.colon.getneighbors(self.pos)
+        neighbors = self.colon.getNeighbors(self.pos)
         numhealthy = 0
         for obj in neighbors.itervalues():
             if isinstance(obj,Healthy):
@@ -94,25 +94,3 @@ class Cancer(Cell):
         super(Cancer,self,pos,ID,colon).__init__()
         self.lifespan = 1000
         self.puberty = 20
-    
-    
-        
-    
-        
-        
-        
-    
-        
-        
-        
-        
-                    
-                
-        
-            
-        
-            
-            
-        
-        
-        
