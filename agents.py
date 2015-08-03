@@ -22,19 +22,22 @@ class Agent:
 
 class Cell(Agent):
     # A cell is an agent who can reproduce and will eventually die
-    def __init__(self,pos,ID,Colon,child):
+    def __init__(self,pos,ID,Colon,child=True):
         super(Cell,self,pos,ID).__init__()
         # The value at which a cell will die()
         self.lifespan = 100 #arbitrary
-        # A counter which will determine the Cell's proximity to lifespan
-        self.age = np.random.randint(100)
         # The age at which a Cell should attempt to replicate()
         self.puberty = 50 #arbitrary
-        # Counter to measure the time since last cell division
-        self.treplicate = np.random.randint(self.puberty) #arbitrary
         self.colon = Colon
-        if child == True:
-            self.treplicate = 0
+        # A counter which will determine the Cell's proximity to lifespan and
+        # Counter to measure the time since last cell division, random at the
+        # start of the simulation and 0 otherwise
+        if child == False:
+            self.treplicate = np.random.randint(self.puberty)
+            self.age = np.random.randint(self.age)
+        else:
+            self.trplicate = 0
+            self.age = 0
     # A function which checks if the cells environment is appropriate for
     # growth and returns a Bool, True if Cell should live False otherwise
     # Should be overwritten in subclasses!
