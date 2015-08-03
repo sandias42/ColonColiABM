@@ -10,7 +10,9 @@ the methods and values of the class itself.
 
 import numpy as np
 import pydispatch
-from main import * # BZ - For the time being I've left script import statements in this format to distinguish them from actual packages/modules
+# BZ - For the time being I've left script import statements 
+# in this format to distinguish them from actual packages/modules
+from main import *
 
 class Agent:
     # An agent has a unique position and id to interact with World
@@ -42,7 +44,7 @@ class Cell(Agent):
     # growth and returns a Bool, True if Cell should live False otherwise
     # Should be overwritten in subclasses!
     def lifeCondition(self):
-        return True        
+        return True
     def getAge(self):
         return self.age
     def die(self):
@@ -55,6 +57,11 @@ class Cell(Agent):
         for pos, obj in neighbors.iteritems():
             if obj == None:
                 emptyNeighbors.append(pos)  
+        # If the Cell is on the edge of the colon add the corresponding "exterior" 
+        # spaces that it can replicate to
+        if len(neighbors) < 26:
+            for i in range(26-len(neighbors)):
+                emptyNeighbors.append(None)
     # Creates a child object of the same type as parent in a random adjacent
     # empty space. As defined here, the Cell won't replicate if all adjacent
     # occupied but will continue to check each tick. Cancer cells should 
@@ -127,12 +134,20 @@ class Cancer(Cell):
     def lifeCondition(self):
         return True
     def replicate(self):
-        nxtpos,o = numpy.random.shuffle(
-            self.colon.getNeighbors(self.pos).items())[0]
-        if o != None:
-            o.move(self.pos)
-        colon.spawnNew(self, nxtpos)
-        self.treplicate = 0
+        neighbors = self.colon.getNeighbors(self.pos)
+        exts = 26-len(neighbors)
+        if len(neighbors) < 26:
+            for i in range(exts):
+                neighbors.append(None)
+        space = numpy.random.shuffle(
+            neighbors.items())[0]
+        if space = None:
+            self.treplicate = 0
+        else:
+            if space[1] != None:
+                space[1].move(self.pos)
+            colon.spawnNew(space[0], self)
+            self.treplicate = 0
         
 class Ecoli(Cell)
     def __init__(self,pos,ID,colon):
