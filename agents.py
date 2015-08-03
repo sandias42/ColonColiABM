@@ -86,7 +86,7 @@ class Cell(Agent):
             o.move(self.pos)
         # Puts the agent specified by the first argument in the space specified
         # by the second argument provided the space is empty        
-        self.colon.moveAgent(nxt,self)
+        self.colon.moveAgent(posPrev,nxt,self)
     # Handles the timestep event 
     # TODO figure out pydispatcher and listeners
     def doAction(self, sender):

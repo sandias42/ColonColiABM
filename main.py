@@ -71,7 +71,7 @@ class Colon:
             if (abs(t[0].layer - pos.layer) <= 1) and (abs(t[0].x - pos.x) <=1 ) and (abs(t[0].y - pos.y) <= 1) and (t[0] != pos):
                 neighbors = dict(neighbors, **dict(t))
                 # edges tracks the number of sides of a space that are in contact with the "edge" of the colon (i.e. on the outer surface of the colon wall)
-                edges = abs(t[0].layer%layers) + abs(t[0].x%width) + abs(t[0].y%height)
+                edges = abs(t[0].layer%(layers-1)) + abs(t[0].x%(width-1)) + abs(t[0].y%(height-1))
                 if edges < 3:
                     if len(neighbors) == 7 + int(math.ceil(float(edges)/2.0))*4 + int(math.floor(float(edges)/2.0))*6:
                         return neighbors
@@ -84,10 +84,10 @@ class Colon:
 
     # Spawns a new Cell in Space pos (e.g. when a cell reproduces)
     def spawnNew(self, pos, cell):
-        if isinstance(obj,Healthy):
+        if isinstance(cell,Healthy):
             self.spaces[pos] = Healthy(pos, self.ids[self.current_id], self, True)
             self.current_id += 1
-        elif isinstance(obj,Cancer):
+        elif isinstance(cell,Cancer):
             self.spaces[pos] = Cancer(pos, self.ids[self.current_id], self, True)
             self.current_id += 1
         else:
@@ -96,7 +96,19 @@ class Colon:
 
     # Returns a Cell object at a given Space pos, or None if the Space is empty
     def objByPos(self, pos):
-        
+        # If a designated position is outside of the colon return None
+        if (pos.layer < 0 or pos.layer > (layers-1)) or (pos.x < 0 or pos.x > (width-1)) or (pos.y < 0 or pos.y > (height-1)):
+            return None
+        else:
+            return self.spaces[pos]
+
+    def moveAgent(self, oldPos, newPos, cell):
+        # Removes a cell from the Colon if it will move outside of the colon space
+        if (newPos.layer < 0 or newPos.layer > (layers-1)) or (newPos.x < 0 or newPos.x > (width-1)) or (newPos.y < 0 or newPos.y > (height-1)):
+            self.remove(oldPos)
+        else:
+            self.spaces[newPos] = cell
+            self.spaces[oldPos] = None
 
     def is_unsatisfied(self, x, y):
         race = self.agents[(x,y)]
