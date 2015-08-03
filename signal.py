@@ -12,6 +12,6 @@ def main( ):
 def handle_event( sender ):
     """Simple event handler"""
     print 'Signal was sent by', sender
-dispatcher.connect( handle_event, signal=SIGNAL, sender=first_sender )
+dispatcher.connect( handle_event, signal=SIGNAL, sender=second_sender )
 
 main()

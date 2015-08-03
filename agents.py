@@ -22,7 +22,7 @@ class Agent:
 
 class Cell(Agent):
     # A cell is an agent who can reproduce and will eventually die
-    def __init__(self,pos,ID,Colon):
+    def __init__(self,pos,ID,Colon,child):
         super(Cell,self,pos,ID).__init__()
         # The value at which a cell will die()
         self.lifespan = 100 #arbitrary
@@ -33,6 +33,8 @@ class Cell(Agent):
         # Counter to measure the time since last cell division
         self.treplicate = np.random.randint(self.puberty) #arbitrary
         self.colon = Colon
+        if child == True:
+            self.treplicate = 0
     # A function which checks if the cells environment is appropriate for
     # growth and returns a Bool, True if Cell should live False otherwise
     # Should be overwritten in subclasses!
@@ -41,8 +43,6 @@ class Cell(Agent):
     def getAge(self):
         return self.age
     def die(self):
-        # TODO Colon function which deletes the Cell instance and replaces it
-        # with None
         self.colon.remove(self)
     # Helper to return the list of empty neighbors
     def emptyNeighbors(self):
@@ -57,14 +57,14 @@ class Cell(Agent):
     # occupied but will continue to check each tick. Cancer cells should 
     # override
     def replicate(self):
-        # Colon function which generates a new Cell in the space of the
-        # first argument, and takes the Cell itself as the second so the
-        # function can make child cell the same type as parent (and track
-        # reproduction later if desired)
         if self.emptyNeighbors().len() == 0:
             return
         else:
-            self.colon.spawnNew(self,np.random.shuffle(self.emptyNeighbors())[0])
+            # Colon function which generates a new Cell a random empty space 
+            # as the first argument, and takes the Cell itself as the second 
+            # so the function can make child cell the same type as parent 
+            # (and track reproduction later if desired)
+            self.colon.spawnNew(np.random.shuffle(self.emptyNeighbors())[0], self)
             self.treplicate = 0
     # Moves cell into the space which is in the same direction as the calling
     # object. If that space is empty, it asks colon to update its position, if
@@ -81,15 +81,15 @@ class Cell(Agent):
             z,x,y = nxt
             nxt = Space(layer=z,x=x,y=y)
         # Get the current resident of a Space by position
-        o = colon.objByPos(nxt)
+        o = self.colon.objByPos(nxt)
         if o != None:
             o.move(self.pos)
         # Puts the agent specified by the first argument in the space specified
         # by the second argument provided the space is empty        
-        colon.moveAgent(self,nxt)
+        self.colon.moveAgent(posPrev,nxt,self)
     # Handles the timestep event 
     # TODO figure out pydispatcher and listeners
-    def doAction(self):
+    def doAction(self, sender):
         if not self.lifeCondition() or self.age >= self.lifespan:
             self.die()
         else:
@@ -99,9 +99,9 @@ class Cell(Agent):
             self.treplicate += 1
 
 class Healthy(Cell):
-    def __init__(self,pos,ID,colon):
+    def __init__(self,pos,ID,colon,child):
         # Keeping arbitrary Cell defaults
-        super(Healthy,self,pos,ID,colon).__init__()
+        super(Healthy,self,pos,ID,colon,child).__init__()
         # Change this to change how many neighbors are necessary for survival
         self.numNeighborsReq = 13
     def lifeCondition(self):
@@ -116,15 +116,15 @@ class Healthy(Cell):
             return False
             
 class Cancer(Cell):
-    def __init__(self,pos,ID,colon):
+    def __init__(self,pos,ID,colon,child):
         # Keeping super methods
-        super(Cancer,self,pos,ID,colon).__init__()
+        super(Cancer,self,pos,ID,colon,child).__init__()
         self.lifespan = 1000
         self.puberty = 20
     def lifeCondition(self):
         return True
     def replicate(self):
-        o, nxtpos = numpy.random.shuffle(
+        nxtpos,o = numpy.random.shuffle(
             self.colon.getNeighbors(self.pos).items())[0]
         if o != None:
             o.move(self.pos)

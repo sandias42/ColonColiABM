@@ -3,7 +3,7 @@ import itertools
 import random
 import copy
 import math
-#import numpy as np
+import numpy as np
 from agents import * # BZ - For the time being I've left script import statements in this format to distinguish them from actual packages/modules
 from pydispatch import dispatcher
 
@@ -56,26 +56,59 @@ class Colon:
         # Assign spaces in colon wall region to each cell type
         self.n_cancer = int(self.cancerRatio*self.n_occupied)
         for pos in itertools.islice(self.outerSpaces, self.n_cancer):
-            self.spaces = dict(self.spaces, **dict(pos, Cancer(pos, self.ids[self.current_id], self)))
+            self.spaces = dict(self.spaces, **dict(pos, Cancer(pos, self.ids[self.current_id], self, False)))
                 self.current_id += 1
             )
         for pos in itertools.islice(self.outerSpaces, self.n_cancer, self.n_occupied):
-            self.spaces = dict(self.spaces, **dict(pos, Healthy(pos, self.ids[self.current_id], self)))
+            self.spaces = dict(self.spaces, **dict(pos, Healthy(pos, self.ids[self.current_id], self, False)))
                 self.current_id += 1
             )
 
+    # Returns a dictionary of neighboring spaces and their current occupants for a given Space pos
     def getNeighbors(self, pos):
         neighbors = {}
         for t in self.spaces.iteritems():
             if (abs(t[0].layer - pos.layer) <= 1) and (abs(t[0].x - pos.x) <=1 ) and (abs(t[0].y - pos.y) <= 1) and (t[0] != pos):
                 neighbors = dict(neighbors, **dict(t))
                 # edges tracks the number of sides of a space that are in contact with the "edge" of the colon (i.e. on the outer surface of the colon wall)
-                edges = abs(t[0].layer%layers) + abs(t[0].x%width) + abs(t[0].y%height)
+                edges = abs(t[0].layer%(layers-1)) + abs(t[0].x%(width-1)) + abs(t[0].y%(height-1))
                 if edges < 3:
                     if len(neighbors) == 7 + int(math.ceil(float(edges)/2.0))*4 + int(math.floor(float(edges)/2.0))*6:
                         return neighbors
                 elif len(neighbors) == 26:
                     return neighbors
+
+    # Removes a Cell from its current Space pos (e.g. when a cell dies)
+    def remove(self, pos):
+        self.spaces[pos] = None
+
+    # Spawns a new Cell in Space pos (e.g. when a cell reproduces)
+    def spawnNew(self, pos, cell):
+        if isinstance(cell,Healthy):
+            self.spaces[pos] = Healthy(pos, self.ids[self.current_id], self, True)
+            self.current_id += 1
+        elif isinstance(cell,Cancer):
+            self.spaces[pos] = Cancer(pos, self.ids[self.current_id], self, True)
+            self.current_id += 1
+        else:
+            print ("Error: Cell type is neither Healthy nor Cancer!")
+            raise TypeError
+
+    # Returns a Cell object at a given Space pos, or None if the Space is empty
+    def objByPos(self, pos):
+        # If a designated position is outside of the colon return None
+        if (pos.layer < 0 or pos.layer > (layers-1)) or (pos.x < 0 or pos.x > (width-1)) or (pos.y < 0 or pos.y > (height-1)):
+            return None
+        else:
+            return self.spaces[pos]
+
+    def moveAgent(self, oldPos, newPos, cell):
+        # Removes a cell from the Colon if it will move outside of the colon space
+        if (newPos.layer < 0 or newPos.layer > (layers-1)) or (newPos.x < 0 or newPos.x > (width-1)) or (newPos.y < 0 or newPos.y > (height-1)):
+            self.remove(oldPos)
+        else:
+            self.spaces[newPos] = cell
+            self.spaces[oldPos] = None
 
     def is_unsatisfied(self, x, y):
         race = self.agents[(x,y)]
@@ -168,7 +201,7 @@ class Colon:
         plt.savefig(file_name)
 
 # Implementation goes here
-c = Colon(25, 500, 500, 100, 100, 0.3, 0.85)
+c = Colon(500, 500, 500, 100, 100, 0.3, 0.85)
 c.populate()
 # TODO: Write method that returns true if at least one E. coli object is alive in colon
 while(Coli.is_alive()):
