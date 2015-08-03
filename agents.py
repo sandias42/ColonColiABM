@@ -44,36 +44,42 @@ class Cell(Agent):
         # TODO Colon function which deletes the Cell instance and replaces it
         # with None
         self.colon.remove(self)
-    # Creates a child object of the same type as parent in a random adjacent
-    # empty space. As defined here, the Cell won't replicate if all adjacent
-    # occupied but will continue to check each tick. Cancer cells should 
-    # override
-    def replicate(self):
+    # Helper to return the list of empty neighbors
+    def emptyNeighbors(self):
         # as used here, neighbors should be a dictionary
         neighbors = self.colon.getNeighbors(self.pos)
         emptyNeighbors= []
         for pos, obj in neighbors.iteritems():
             if obj == None:
-                emptyNeighbors.append(pos)
+                emptyNeighbors.append(pos)  
+    # Creates a child object of the same type as parent in a random adjacent
+    # empty space. As defined here, the Cell won't replicate if all adjacent
+    # occupied but will continue to check each tick. Cancer cells should 
+    # override
+    def replicate(self):
         # Colon function which generates a new Cell in the space of the
         # first argument, and takes the Cell itself as the second so the
         # function can make child cell the same type as parent (and track
         # reproduction later if desired)
-        if emptyNeighbors.len() == 0:
+        if self.emptyNeighbors().len() == 0:
             return
         else:
-            self.colon.spawnNew(np.random.shuffle(emptyNeighbors)[0],self)
+            self.colon.spawnNew(self,np.random.shuffle(self.emptyNeighbors())[0])
             self.treplicate = 0
     # Moves cell into the space which is in the same direction as the calling
     # object. If that space is empty, it asks colon to update its position, if
     # it contains an object then it asks colon for the object and makes move()
     def move(self, posPrev):
-        # Does this work?
-        nxt = tuple(np.add(
-            np.subtract(self.pos.values(),posPrev.values()),
-            self.pos.values()))
-        z,x,y = nxt
-        nxt = Space(layer=z,x=x,y=y)
+        empties = self.emptyNeighbors()
+        if empties.len() != 0:
+            nxt = np.random.shuffle(empties)[0]
+        else:
+            # Does this work?
+            nxt = tuple(np.add(
+                np.subtract(self.pos.values(),posPrev.values()),
+                self.pos.values()))
+            z,x,y = nxt
+            nxt = Space(layer=z,x=x,y=y)
         # Get the current resident of a Space by position
         o = colon.objByPos(nxt)
         if o != None:
@@ -81,8 +87,6 @@ class Cell(Agent):
         # Puts the agent specified by the first argument in the space specified
         # by the second argument provided the space is empty        
         colon.moveAgent(self,nxt)
-        
-        
     # Handles the timestep event 
     # TODO figure out pydispatcher and listeners
     def doAction(self):
@@ -117,3 +121,17 @@ class Cancer(Cell):
         super(Cancer,self,pos,ID,colon).__init__()
         self.lifespan = 1000
         self.puberty = 20
+    def lifeCondition(self):
+        return True
+    def replicate(self):
+        o, nxtpos = numpy.random.shuffle(
+            self.colon.getNeighbors(self.pos).items())[0]
+        if o != None:
+            o.move(self.pos)
+        colon.spawnNew(self, nxtpos)
+        self.treplicate = 0
+        
+        
+        
+        
+        
