@@ -62,6 +62,7 @@ class Colon:
                 self.current_id += 1
             )
 
+    # Returns a dictionary of neighboring spaces and their current occupants for a given Space pos
     def getNeighbors(self, pos):
         neighbors = {}
         for t in self.spaces.iteritems():
@@ -74,6 +75,22 @@ class Colon:
                         return neighbors
                 elif len(neighbors) == 26:
                     return neighbors
+
+    # Removes a Cell from its current Space pos (e.g. when a cell dies)
+    def remove(self, pos):
+        self.spaces[pos] = None
+
+    # Spawns a new Cell in Space pos (e.g. when a cell reproduces)
+    def spawnNew(self, pos, cell):
+        if type(cell) is Healthy:
+            self.spaces[pos] = Healthy(pos, self.ids[self.current_id], self)
+            self.current_id += 1
+        elif type(cell) is Cancer:
+            self.spaces[pos] = Cancer(pos, self.ids[self.current_id], self)
+            self.current_id += 1
+        else:
+            print ("Error: Cell type is neither Healthy nor Cancer!")
+            raise TypeError
 
     def is_unsatisfied(self, x, y):
         race = self.agents[(x,y)]
