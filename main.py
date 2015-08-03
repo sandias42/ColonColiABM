@@ -94,6 +94,8 @@ class Colon:
             print ("Error: Cell type is neither Healthy nor Cancer!")
             raise TypeError
 
+    
+
     def is_unsatisfied(self, x, y):
         race = self.agents[(x,y)]
         count_similar = 0

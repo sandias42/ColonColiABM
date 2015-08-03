@@ -81,12 +81,12 @@ class Cell(Agent):
             z,x,y = nxt
             nxt = Space(layer=z,x=x,y=y)
         # Get the current resident of a Space by position
-        o = colon.objByPos(nxt)
+        o = self.colon.objByPos(nxt)
         if o != None:
             o.move(self.pos)
         # Puts the agent specified by the first argument in the space specified
         # by the second argument provided the space is empty        
-        colon.moveAgent(self,nxt)
+        self.colon.moveAgent(self,nxt)
     # Handles the timestep event 
     # TODO figure out pydispatcher and listeners
     def doAction(self, sender):
