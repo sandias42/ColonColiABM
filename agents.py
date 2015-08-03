@@ -28,8 +28,9 @@ class Cell(Agent):
         self.lifespan = 100 #arbitrary
         # A counter which will determine the Cell's proximity to lifespan
         self.age = np.random.randint(100)
-        # Counter to measure the time since last cell division
+        # The age at which a Cell should attempt to replicate()
         self.puberty = 50 #arbitrary
+        # Counter to measure the time since last cell division
         self.treplicate = np.random.randint(self.puberty) #arbitrary
         self.colon = Colon
     # A function which checks if the cells environment is appropriate for
@@ -43,7 +44,10 @@ class Cell(Agent):
         # TODO Colon function which deletes the Cell instance and replaces it
         # with None
         self.colon.remove(self)
-    # The age at which a Cell should attempt to replicate()
+    # Creates a child object of the same type as parent in a random adjacent
+    # empty space. As defined here, the Cell won't replicate if all adjacent
+    # occupied but will continue to check each tick. Cancer cells should 
+    # override
     def replicate(self):
         # as used here, neighbors should be a dictionary
         neighbors = self.colon.getNeighbors(self.pos)
@@ -60,6 +64,25 @@ class Cell(Agent):
         else:
             self.colon.spawnNew(np.random.shuffle(emptyNeighbors)[0],self)
             self.treplicate = 0
+    # Moves cell into the space which is in the same direction as the calling
+    # object. If that space is empty, it asks colon to update its position, if
+    # it contains an object then it asks colon for the object and makes move()
+    def move(self, posPrev):
+        # Does this work?
+        nxt = tuple(np.add(
+            np.subtract(self.pos.values(),posPrev.values()),
+            self.pos.values()))
+        z,x,y = nxt
+        nxt = Space(layer=z,x=x,y=y)
+        # Get the current resident of a Space by position
+        o = colon.objByPos(nxt)
+        if o != None:
+            o.move(self.pos)
+        # Puts the agent specified by the first argument in the space specified
+        # by the second argument provided the space is empty        
+        colon.moveAgent(self,nxt)
+        
+        
     # Handles the timestep event 
     # TODO figure out pydispatcher and listeners
     def doAction(self):
