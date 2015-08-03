@@ -131,6 +131,13 @@ class Cancer(Cell):
         colon.spawnNew(self, nxtpos)
         self.treplicate = 0
         
+class Ecoli(Cell)
+    def __init__(self,pos,ID,colon):
+        # Keeping super methods
+        super(Cancer,self,pos,ID,colon).__init__()
+        self.lifespan = 20
+        self.puberty = 
+        
         
         
         
