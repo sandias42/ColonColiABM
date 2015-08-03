@@ -94,7 +94,9 @@ class Colon:
             print ("Error: Cell type is neither Healthy nor Cancer!")
             raise TypeError
 
-    
+    # Returns a Cell object at a given Space pos, or None if the Space is empty
+    def objByPos(self, pos):
+        
 
     def is_unsatisfied(self, x, y):
         race = self.agents[(x,y)]
