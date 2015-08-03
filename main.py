@@ -110,57 +110,6 @@ class Colon:
             self.spaces[newPos] = cell
             self.spaces[oldPos] = None
 
-    def is_unsatisfied(self, x, y):
-        race = self.agents[(x,y)]
-        count_similar = 0
-        count_different = 0
-
-        if x > 0 and y > 0 and (x-1, y-1) not in self.empty_houses:
-            if self.agents[(x-1, y-1)] == race:
-                count_similar += 1
-            else:
-                count_different += 1
-        if y > 0 and (x,y-1) not in self.empty_houses:
-            if self.agents[(x,y-1)] == race:
-                count_similar += 1
-            else:
-                count_different += 1
-        if x < (self.width-1) and y > 0 and (x+1,y-1) not in self.empty_houses:
-            if self.agents[(x+1,y-1)] == race:
-                count_similar += 1
-            else:
-                count_different += 1
-        if x > 0 and (x-1,y) not in self.empty_houses:
-            if self.agents[(x-1,y)] == race:
-                count_similar += 1
-            else:
-                count_different += 1        
-        if x < (self.width-1) and (x+1,y) not in self.empty_houses:
-            if self.agents[(x+1,y)] == race:
-                count_similar += 1
-            else:
-                count_different += 1
-        if x > 0 and y < (self.height-1) and (x-1,y+1) not in self.empty_houses:
-            if self.agents[(x-1,y+1)] == race:
-                count_similar += 1
-            else:
-                count_different += 1        
-        if x > 0 and y < (self.height-1) and (x,y+1) not in self.empty_houses:
-            if self.agents[(x,y+1)] == race:
-                count_similar += 1
-            else:
-                count_different += 1        
-        if x < (self.width-1) and y < (self.height-1) and (x+1,y+1) not in self.empty_houses:
-            if self.agents[(x+1,y+1)] == race:
-                count_similar += 1
-            else:
-                count_different += 1
-
-        if (count_similar+count_different) == 0:
-            return False
-        else:
-            return float(count_similar)/(count_similar+count_different) < self.happy_threshold
-
     def update(self):
         for i in range(self.n_iterations):
         self.old_agents = copy.deepcopy(self.agents)
@@ -180,15 +129,16 @@ class Colon:
 
     def move_to_empty(self, x, y):
         race = self.agents[(x,y)]
-    empty_house = random.choice(self.empty_houses)
-    self.updated_agents[empty_house] = race
-    del self.updated_agents[(x, y)]
-    self.empty_houses.remove(empty_house)
-    self.empty_houses.append((x, y))
+        empty_house = random.choice(self.empty_houses)
+        self.updated_agents[empty_house] = race
+        del self.updated_agents[(x, y)]
+        self.empty_houses.remove(empty_house)
+        self.empty_houses.append((x, y))
 
     def plot(self):
         fig, ax = plt.subplots()
         #If you want to run the simulation with more than 7 colors, you should set agent_colors accordingly
+        # b:blue g:green r:red c:cyan m:magenta y:yellow k:black w:white
         agent_colors = {1:'b', 2:'r', 3:'g', 4:'c', 5:'m', 6:'y', 7:'k'}
         for agent in self.agents:
             ax.scatter(agent[0]+0.5, agent[1]+0.5, color=agent_colors[self.agents[agent]])
@@ -203,6 +153,7 @@ class Colon:
 # Implementation goes here
 c = Colon(500, 500, 500, 100, 100, 0.3, 0.85)
 c.populate()
+dispatcher.connect(doAction, signal="r", sender=c.sender)
 # TODO: Write method that returns true if at least one E. coli object is alive in colon
 while(Coli.is_alive()):
-    dispatcher.send( signal="r", sender=c.sender )
+    dispatcher.send(signal="r", sender=c.sender)
