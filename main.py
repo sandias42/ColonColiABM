@@ -4,7 +4,7 @@ import random
 import copy
 import math
 #import numpy as np
-from cell import * # BZ - For the time being I've left script import statements in this format to distinguish them from actual packages/modules
+from agents import * # BZ - For the time being I've left script import statements in this format to distinguish them from actual packages/modules
 from pydispatch import dispatcher
 
 #Record object for each space in the colon, xcoord is height position, ycoord is width position
@@ -13,6 +13,8 @@ class Space(object):
         self.layer = layer
         self.x = x
         self.y = y
+    def values(self):
+        return tuple(self.layer,self.x,self.y)
 
 #CELL COORDINATES ARE (LAYER, WIDTH (HORIZONTAL), HEIGHT (VERTICAL)) S.O. to Ethan Alley
 class Colon:
