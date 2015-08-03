@@ -124,7 +124,7 @@ class Cancer(Cell):
     def lifeCondition(self):
         return True
     def replicate(self):
-        o, nxtpos = numpy.random.shuffle(
+        nxtpos,o = numpy.random.shuffle(
             self.colon.getNeighbors(self.pos).items())[0]
         if o != None:
             o.move(self.pos)
