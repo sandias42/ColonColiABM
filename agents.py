@@ -90,6 +90,9 @@ class Cell(Agent):
         # Puts the agent specified by the first argument in the space specified
         # by the second argument provided the space is empty        
         self.colon.moveAgent(posPrev,nxt,self)
+    # A defined behavior to be executed each timestep and overridden in subclass
+    def behavior(self):
+        return
     # Handles the timestep event 
     # TODO figure out pydispatcher and listeners
     def doAction(self, sender):
@@ -98,6 +101,7 @@ class Cell(Agent):
         else:
             if self.treplicate >= self.puberty:
                 self.replicate()
+            self.behavior()
             self.age += 1
             self.treplicate += 1
 
@@ -137,9 +141,21 @@ class Cancer(Cell):
 class Ecoli(Cell)
     def __init__(self,pos,ID,colon):
         # Keeping super methods
-        super(Cancer,self,pos,ID,colon).__init__()
-        self.lifespan = 20
-        self.puberty = 
+        super(Ecoli,self,pos,ID,colon).__init__()
+        self.lifespan = 20 # TODO- FIND NUMBERS THAT AREN'T STUPID
+        self.puberty = 10
+        # % Chance of sticking to a healthy cell
+        self.healthyBinding = 20, # arbitrary
+        # % Chance of sticking to a cancer cell
+        self.cancerBinding = 50 # arbitrary
+        # % Chance of falling off a healthy cell when already stuck
+        self.healthyDissoc = 80
+        # % Chance of falling off a cancer cell when already stuck
+        self.cancerDissoc = 5
+        self.isStuck = False
+    def behavior():
+        neighbors = self.colon.getNeighbors(self.pos)
+        
         
         
         
