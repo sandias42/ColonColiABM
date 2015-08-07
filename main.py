@@ -56,11 +56,11 @@ class Colon:
         # Assign spaces in colon wall region to each cell type
         self.n_cancer = int(self.cancerRatio*self.n_occupied)
         for pos in itertools.islice(self.outerSpaces, self.n_cancer):
-            self.spaces = dict(self.spaces, **dict(pos, Cancer(pos, self.ids[self.current_id], self, False)))
+            self.spaces = dict(self.spaces, **dict(pos, Cancer(pos, self.ids[self.current_id], self, child=False)))
                 self.current_id += 1
             )
         for pos in itertools.islice(self.outerSpaces, self.n_cancer, self.n_occupied):
-            self.spaces = dict(self.spaces, **dict(pos, Healthy(pos, self.ids[self.current_id], self, False)))
+            self.spaces = dict(self.spaces, **dict(pos, Healthy(pos, self.ids[self.current_id], self, child=False)))
                 self.current_id += 1
             )
 
@@ -84,11 +84,13 @@ class Colon:
 
     # Spawns a new Cell in Space pos (e.g. when a cell reproduces)
     def spawnNew(self, pos, cell):
-        if isinstance(cell,Healthy):
-            self.spaces[pos] = Healthy(pos, self.ids[self.current_id], self, True)
+        if pos == None:
+            return
+        elif isinstance(cell,Healthy):
+            self.spaces[pos] = Healthy(pos, self.ids[self.current_id], self)
             self.current_id += 1
         elif isinstance(cell,Cancer):
-            self.spaces[pos] = Cancer(pos, self.ids[self.current_id], self, True)
+            self.spaces[pos] = Cancer(pos, self.ids[self.current_id], self)
             self.current_id += 1
         else:
             print ("Error: Cell type is neither Healthy nor Cancer!")
@@ -155,5 +157,5 @@ c = Colon(500, 500, 500, 100, 100, 0.3, 0.85)
 c.populate()
 dispatcher.connect(doAction, signal="r", sender=c.sender)
 # TODO: Write method that returns true if at least one E. coli object is alive in colon
-while(Coli.is_alive()):
+while(Ecoli.is_alive()):
     dispatcher.send(signal="r", sender=c.sender)
