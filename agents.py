@@ -14,6 +14,7 @@ import pydispatch
 # in this format to distinguish them from actual packages/modules
 from main import *
 
+
 class Agent:
     # An agent has a unique position and id to interact with World
     def __init__(self,pos,ID):
@@ -74,7 +75,7 @@ class Cell(Agent):
             # as the first argument, and takes the Cell itself as the second 
             # so the function can make child cell the same type as parent 
             # (and track reproduction later if desired)
-            self.colon.spawnNew(np.random.shuffle(self.emptyNeighbors())[0], self)
+            self.colon.spawnNew(myshuffle(self.emptyNeighbors())[0], self)
             self.treplicate = 0
     # Moves cell into the space which is in the same direction as the calling
     # object. If that space is empty, it asks colon to update its position, if
@@ -82,7 +83,7 @@ class Cell(Agent):
     def move(self, posPrev):
         empties = self.emptyNeighbors()
         if empties.len() != 0:
-            nxt = np.random.shuffle(empties)[0]
+            nxt = myshuffle(empties)[0]
         else:
             # Does this work?
             nxt = tuple(np.add(
@@ -143,7 +144,7 @@ class Cancer(Cell):
         if len(neighbors) < 26:
             for i in range(exts):
                 neighbors.append(None)
-        space = numpy.random.shuffle(
+        space = myshuffle(
             neighbors.items())[0]
         if space = None:
             self.treplicate = 0
@@ -162,17 +163,68 @@ class Ecoli(Cell)
         # % Chance of sticking to a healthy cell
         self.healthyBinding = 20, # arbitrary
         # % Chance of sticking to a cancer cell
-        self.cancerBinding = 50 # arbitrary
+        self.cancerBinding = 50 # arbitrary      
         # % Chance of falling off a healthy cell when already stuck
-        self.healthyDissoc = 80
+        self.healthyDissoc = 80 #arbitrary
         # % Chance of falling off a cancer cell when already stuck
-        self.cancerDissoc = 5
+        self.cancerDissoc = 5 #arbitrary
         self.isStuck = False
-    def behavior():
+        self.stuckTo = None
+    def behavior(self):
         neighbors = self.colon.getNeighbors(self.pos)
+        empties = []
+        def stick(pos,obj):
+            # To keep things simple for now, Ecoli can't stick to themselves
+            if self.isStuck == True or isinstance(obj, Ecoli):
+                pass
+            elif isinstance(obj, Cancer) 
+            && np.random.randint(100) <= self.cancerBinding:
+                self.isStuck = True
+                self.stuckTo = obj
+            elif isinstance(obj, Healthy) 
+            && np.random.randint(100) <= self.healthyBinding:
+                self.isStuck = True
+                self.stuckTo = obj
+            elif obj == None:
+                empties.append(pos)
+            else:
+                print "Illegal object in colon.getNeighbors!"
+                raise TypeError
+                
+        for pos, obj in neighbors:
+            stick(pos,obj)
+        if not self.isStuck:
+            # This filter relies on the rule that the next frame (ie the
+            # direction of colon flow) is always counting up from zero, or one
+            # greater than the frame before
+            empties = filter((lambda pos: 
+            True if pos.layer == (self.pos.layer + 1) else False), empties)
+            # Will only move down because of the above filter
+            if empties.len() > 0:
+                colon.moveAgent(self.pos,myshuffle(empties)[0],self)
+            else:
+                pass
+        elif isinstance(self.stuckTo, Cancer) 
+        && np.random.randint(100) <= self.cancerDissoc
+            self.isStuck = False
+            self.stuckTo = None
+        elif isinstance(self.stuckTo, Healthy) 
+        && np.random.randint(100) <= self.healthyDissoc
+            self.isStuck = False
+            self.stuckTo = None
+        else:
+            print "Ecoli is stuck to an illegal object type"
+            raise TypeError
+        
+
+            
+            
         
         
-        
+# A more sensible, functional implementation of shuffle
+def myshuffle(seq):
+    myshuffle(seq)
+    return seq
         
         
         
