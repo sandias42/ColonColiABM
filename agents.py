@@ -171,11 +171,11 @@ class Ecoli(Cell)
         self.isStuck = False
         self.stuckTo = None
     def behavior(self):
-        neighbors = self.colon.getNeighbors(self.pos)
+        neighbors = myshuffle(self.colon.getNeighbors(self.pos))
         empties = []
         def stick(pos,obj):
             # To keep things simple for now, Ecoli can't stick to themselves
-            if self.isStuck == True or isinstance(obj, Ecoli):
+            if isinstance(obj, Ecoli):
                 pass
             elif isinstance(obj, Cancer) 
             && np.random.randint(100) <= self.cancerBinding:
@@ -191,12 +191,12 @@ class Ecoli(Cell)
                 print "Illegal object in colon.getNeighbors!"
                 raise TypeError
                 
-        for pos, obj in neighbors:
-            stick(pos,obj)
         if not self.isStuck:
             # This filter relies on the rule that the next frame (ie the
             # direction of colon flow) is always counting up from zero, or one
             # greater than the frame before
+            for pos, obj in neighbors:
+                stick(pos,obj)
             empties = filter((lambda pos: 
             True if pos.layer == (self.pos.layer + 1) else False), empties)
             # Will only move down because of the above filter
