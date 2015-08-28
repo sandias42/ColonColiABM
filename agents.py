@@ -9,7 +9,7 @@ the methods and values of the class itself.
 """
 
 import numpy as np
-import pydispatch
+from pydispatch import dispatcher
 # BZ - For the time being I've left script import statements 
 # in this format to distinguish them from actual packages/modules
 from main import *
@@ -41,6 +41,7 @@ class Cell(Agent):
         else:
             self.trplicate = 0
             self.age = 0
+        dispatcher.connect(self.doAction)
     # A function which checks if the cells environment is appropriate for
     # growth and returns a Bool, True if Cell should live False otherwise
     # Should be overwritten in subclasses!
@@ -68,7 +69,7 @@ class Cell(Agent):
     # occupied but will continue to check each tick. Cancer cells should 
     # override
     def replicate(self):
-        if self.emptyNeighbors().len() == 0:
+        if len(self.emptyNeighbors()) == 0:
             return
         else:
             # Colon function which generates a new Cell a random empty space 
@@ -82,7 +83,7 @@ class Cell(Agent):
     # it contains an object then it asks colon for the object and makes move()
     def move(self, posPrev):
         empties = self.emptyNeighbors()
-        if empties.len() != 0:
+        if len(empties) != 0:
             nxt = myshuffle(empties)[0]
         else:
             # Does this work?
@@ -146,7 +147,7 @@ class Cancer(Cell):
                 neighbors.append(None)
         space = myshuffle(
             neighbors.items())[0]
-        if space = None:
+        if space == None:
             self.treplicate = 0
         else:
             if space[1] != None:
@@ -154,7 +155,7 @@ class Cancer(Cell):
             colon.spawnNew(space[0], self)
             self.treplicate = 0
         
-class Ecoli(Cell)
+class Ecoli(Cell):
     def __init__(self,pos,ID,colon):
         # Keeping super methods
         super(Ecoli,self,pos,ID,colon).__init__()
@@ -173,24 +174,6 @@ class Ecoli(Cell)
     def behavior(self):
         neighbors = myshuffle(self.colon.getNeighbors(self.pos))
         empties = []
-        def stick(pos,obj):
-            # To keep things simple for now, Ecoli can't stick to themselves
-            if isinstance(obj, Ecoli):
-                pass
-            elif isinstance(obj, Cancer) 
-            && np.random.randint(100) <= self.cancerBinding:
-                self.isStuck = True
-                self.stuckTo = obj
-            elif isinstance(obj, Healthy) 
-            && np.random.randint(100) <= self.healthyBinding:
-                self.isStuck = True
-                self.stuckTo = obj
-            elif obj == None:
-                empties.append(pos)
-            else:
-                print "Illegal object in colon.getNeighbors!"
-                raise TypeError
-                
         if not self.isStuck:
             # This filter relies on the rule that the next frame (ie the
             # direction of colon flow) is always counting up from zero, or one
@@ -200,26 +183,35 @@ class Ecoli(Cell)
             empties = filter((lambda pos: 
             True if pos.layer == (self.pos.layer + 1) else False), empties)
             # Will only move down because of the above filter
-            if empties.len() > 0:
+            if len(empties) > 0:
                 colon.moveAgent(self.pos,myshuffle(empties)[0],self)
             else:
                 pass
-        elif isinstance(self.stuckTo, Cancer) 
-        && np.random.randint(100) <= self.cancerDissoc
+        elif isinstance(self.stuckTo,Cancer) and np.random.randint(100) <= self.cancerDissoc:
             self.isStuck = False
             self.stuckTo = None
-        elif isinstance(self.stuckTo, Healthy) 
-        && np.random.randint(100) <= self.healthyDissoc
+        elif isinstance(self.stuckTo, Healthy) and np.random.randint(100) <= self.healthyDissoc:
             self.isStuck = False
             self.stuckTo = None
         else:
             print "Ecoli is stuck to an illegal object type"
-            raise TypeError
-        
-
-            
-            
-        
+            raise TypeError                          
+        def stick(pos,obj):
+            # To keep things simple for now, Ecoli can't stick to themselves
+            if isinstance(obj, Ecoli):
+                pass
+            elif isinstance(obj, Cancer) and np.random.randint(100) <= self.cancerBinding:
+                self.isStuck = True
+                self.stuckTo = obj
+            elif isinstance(obj, Healthy) and np.random.randint(100) <= self.healthyBinding:
+                self.isStuck = True
+                self.stuckTo = obj
+            elif obj == None:
+                empties.append(pos)
+            else:
+                print "Illegal object in colon.getNeighbors!"
+                raise TypeError
+                
         
 # A more sensible, functional implementation of shuffle
 def myshuffle(seq):

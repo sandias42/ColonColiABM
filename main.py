@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import itertools
 import random
 import copy
@@ -18,7 +18,7 @@ class Space(object):
 
 #CELL COORDINATES ARE (LAYER, WIDTH (HORIZONTAL), HEIGHT (VERTICAL)) S.O. to Ethan Alley
 class Colon:
-    def __init__(self, layers, width, height, innerWidth, innerHeight, cancerRatio, occupiedRatio):
+    def __init__(self, layers, width, height, innerWidth, innerHeight, cancerRatio, occupiedRatio, iterations=1000):
         self.layers = layers
         self.width = width
         self.height = height
@@ -35,7 +35,7 @@ class Colon:
     def populate(self):
         self.innerSpaces = list(itertools.product(xrange(self.layers),xrange(int((self.width-self.innerWidth)/2), int(self.width-(self.width-self.innerWidth)/2)),xrange(int((self.height-self.innerHeight)/2),int(self.height-(self.height-self.innerHeight)/2))))
         
-        for i in len(self.innerSpaces):
+        for i in xrange(len(self.innerSpaces)):
             self.innerSpaces[i] = Space(*self.innerSpaces[i])
 
         # Assign unoccupied spaces in inner tube of colon
@@ -45,7 +45,7 @@ class Colon:
         self.outerSpaces = list(itertools.product(xrange(self.layers),self.width,itertools.chain(xrange(int((self.height-self.innerHeight)/2)),xrange(int(self.height-(self.height-self.innerHeight)/2),self.height))))+list(itertools.product(xrange(self.layers),itertools.chain(xrange(int((self.width-self.innerWidth)/2)),xrange(int(self.width-(self.width-self.innerWidth)/2))),xrange(int((self.height-self.innerHeight)/2),int(self.height-(self.height-self.innerHeight)/2))))
         random.shuffle(self.outerSpaces)
 
-            for i in len(self.outerSpaces):
+        for i in len(self.outerSpaces):
             self.outerSpaces[i] = Space(*self.outerSpaces[i])
 
         # Assign unoccupied spaces in colon wall region
@@ -56,13 +56,12 @@ class Colon:
         # Assign spaces in colon wall region to each cell type
         self.n_cancer = int(self.cancerRatio*self.n_occupied)
         for pos in itertools.islice(self.outerSpaces, self.n_cancer):
-            self.spaces = dict(self.spaces, **dict(pos, Cancer(pos, self.ids[self.current_id], self, child=False)))
-                self.current_id += 1
-            )
+            self.spaces = dict(self.spaces, **dict(pos, Cancer(pos, self.ids[self.current_id], self, child=False))) 
+            self.current_id += 1
         for pos in itertools.islice(self.outerSpaces, self.n_cancer, self.n_occupied):
             self.spaces = dict(self.spaces, **dict(pos, Healthy(pos, self.ids[self.current_id], self, child=False)))
-                self.current_id += 1
-            )
+            self.current_id += 1
+            
 
     # Returns a dictionary of neighboring spaces and their current occupants for a given Space pos
     def getNeighbors(self, pos):
@@ -112,9 +111,9 @@ class Colon:
             self.spaces[newPos] = cell
             self.spaces[oldPos] = None
 
-    def update(self):
+    """def update(self):
         for i in range(self.n_iterations):
-        self.old_agents = copy.deepcopy(self.agents)
+            self.old_agents = copy.deepcopy(self.agents)
         n_changes = 0
         for agent in self.old_agents:
             if self.is_unhappy(agent[0], agent[1]):
@@ -150,12 +149,13 @@ class Colon:
         ax.set_ylim([0, self.height])
         ax.set_xticks([])
         ax.set_yticks([])
-        plt.savefig(file_name)
+        plt.savefig(file_name) """
 
 # Implementation goes here
 c = Colon(500, 500, 500, 100, 100, 0.3, 0.85)
 c.populate()
-dispatcher.connect(doAction, signal="r", sender=c.sender)
+# What is "r"???
+# dispatcher.connect(doAction, signal="r", sender=c.sender)
 # TODO: Write method that returns true if at least one E. coli object is alive in colon
-while(Ecoli.is_alive()):
-    dispatcher.send(signal="r", sender=c.sender)
+for i in xrange(iterations):
+    dispatcher.send(sender=c.sender)
