@@ -10,12 +10,14 @@ the methods and values of the class itself.
 
 import numpy as np
 from pydispatch import dispatcher
+import sys
+import os
+sys.path.append(os.getcwd())
 # BZ - For the time being I've left script import statements 
 # in this format to distinguish them from actual packages/modules
 from main import *
 
-
-class Agent:
+class Agent(object):
     # An agent has a unique position and id to interact with World
     def __init__(self,pos,ID):
         self.ID = ID
@@ -26,7 +28,7 @@ class Agent:
 class Cell(Agent):
     # A cell is an agent who can reproduce and will eventually die
     def __init__(self,pos,ID,Colon,child=True):
-        super(Cell,self,pos,ID).__init__()
+        super(Cell, self).__init__(pos,ID)
         # The value at which a cell will die()
         self.lifespan = 100 #arbitrary
         # The age at which a Cell should attempt to replicate()
@@ -37,11 +39,12 @@ class Cell(Agent):
         # start of the simulation and 0 otherwise
         if child == False:
             self.treplicate = np.random.randint(self.puberty)
-            self.age = np.random.randint(self.age)
+            self.age = np.random.randint(self.lifespan)
         else:
             self.trplicate = 0
             self.age = 0
         dispatcher.connect(self.doAction)
+        print "Cell number {0} initialized".format(ID)
     # A function which checks if the cells environment is appropriate for
     # growth and returns a Bool, True if Cell should live False otherwise
     # Should be overwritten in subclasses!
@@ -117,7 +120,7 @@ class Cell(Agent):
 class Healthy(Cell):
     def __init__(self,pos,ID,colon,child):
         # Keeping arbitrary Cell defaults
-        super(Healthy,self,pos,ID,colon,child).__init__()
+        super(Healthy, self).__init__(pos,ID,colon,child)
         # Change this to change how many neighbors are necessary for survival
         self.numNeighborsReq = 13
     def lifeCondition(self):
@@ -134,7 +137,7 @@ class Healthy(Cell):
 class Cancer(Cell):
     def __init__(self,pos,ID,colon,child):
         # Keeping super methods
-        super(Cancer,self,pos,ID,colon,child).__init__()
+        super(Cancer, self).__init__(pos,ID,colon,child)
         self.lifespan = 1000
         self.puberty = 20
     def lifeCondition(self):
@@ -158,7 +161,7 @@ class Cancer(Cell):
 class Ecoli(Cell):
     def __init__(self,pos,ID,colon):
         # Keeping super methods
-        super(Ecoli,self,pos,ID,colon).__init__()
+        super(Ecoli,self).__init__(pos,ID,colon)
         self.lifespan = 20 # TODO- FIND NUMBERS THAT AREN'T STUPID
         self.puberty = 10
         # % Chance of sticking to a healthy cell

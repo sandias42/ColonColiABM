@@ -4,8 +4,14 @@ import random
 import copy
 import math
 import numpy as np
-from agents import * # BZ - For the time being I've left script import statements in this format to distinguish them from actual packages/modules
+import os
+import sys
 from pydispatch import dispatcher
+
+# Ensure the modules in our working directory are available for import.
+# This is likely an error with my editor
+sys.path.append(os.getcwd())
+from agents import * # BZ - For the time being I've left script import statements in this format to distinguish them from actual packages/modules
 
 #Record object for each space in the colon, xcoord is height position, ycoord is width position
 class Space(object):
@@ -18,7 +24,7 @@ class Space(object):
 
 #CELL COORDINATES ARE (LAYER, WIDTH (HORIZONTAL), HEIGHT (VERTICAL)) S.O. to Ethan Alley
 class Colon:
-    def __init__(self, layers, width, height, innerWidth, innerHeight, cancerRatio, occupiedRatio, iterations=1000):
+    def __init__(self, layers, width, height, innerWidth, innerHeight, cancerRatio, occupiedRatio, iterations=10):
         self.layers = layers
         self.width = width
         self.height = height
@@ -26,6 +32,7 @@ class Colon:
         self.innerHeight = innerHeight
         self.cancerRatio = cancerRatio # Proportion of cells that are cancerous
         self.occupiedRatio = occupiedRatio # Proportion of all spaces in the COLON WALL that are occupied
+        self.iterations = iterations
         self.spaces = {} # Spaces contains the positions and types of all cells currently in the colon
         self.ids = xrange(100000000) # Cell ID generator, TODO: Figure out how to endlessly generate unique IDs without breaking the bank
         self.current_id = 0 # Tracks current index of id generated from self.ids
@@ -33,7 +40,7 @@ class Colon:
 
     # Randomly distributes cells in the colon, final spaces tuple format will contain a Space record object followed by a Cell object or None if the Space is empty
     def populate(self):
-        self.innerSpaces = list(itertools.product(xrange(self.layers),xrange(int((self.width-self.innerWidth)/2), int(self.width-(self.width-self.innerWidth)/2)),xrange(int((self.height-self.innerHeight)/2),int(self.height-(self.height-self.innerHeight)/2))))
+        self.innerSpaces = list(itertools.product(xrange(self.layers),xrange(int((self.width-self.innerWidth)/2)), xrange(int(self.width-(self.width-self.innerWidth)/2)),xrange(int((self.height-self.innerHeight)/2),int(self.height-(self.height-self.innerHeight)/2))))
         
         for i in xrange(len(self.innerSpaces)):
             self.innerSpaces[i] = Space(*self.innerSpaces[i])
@@ -42,10 +49,10 @@ class Colon:
         for pos in self.innerSpaces:
             self.spaces = dict(self.spaces, **dict(pos, None))
 
-        self.outerSpaces = list(itertools.product(xrange(self.layers),self.width,itertools.chain(xrange(int((self.height-self.innerHeight)/2)),xrange(int(self.height-(self.height-self.innerHeight)/2),self.height))))+list(itertools.product(xrange(self.layers),itertools.chain(xrange(int((self.width-self.innerWidth)/2)),xrange(int(self.width-(self.width-self.innerWidth)/2))),xrange(int((self.height-self.innerHeight)/2),int(self.height-(self.height-self.innerHeight)/2))))
+        self.outerSpaces = list(itertools.product(xrange(self.layers),xrange(self.width),itertools.chain(xrange(int((self.height-self.innerHeight)/2)),xrange(int(self.height-(self.height-self.innerHeight)/2),self.height))))+list(itertools.product(xrange(self.layers),itertools.chain(xrange(int((self.width-self.innerWidth)/2)),xrange(int(self.width-(self.width-self.innerWidth)/2))),xrange(int((self.height-self.innerHeight)/2),int(self.height-(self.height-self.innerHeight)/2))))
         random.shuffle(self.outerSpaces)
 
-        for i in len(self.outerSpaces):
+        for i in xrange(len(self.outerSpaces)):
             self.outerSpaces[i] = Space(*self.outerSpaces[i])
 
         # Assign unoccupied spaces in colon wall region
@@ -67,6 +74,8 @@ class Colon:
     def getNeighbors(self, pos):
         neighbors = {}
         for t in self.spaces.iteritems():
+            # Why is this indexing [0]? I get the error "Str object has no attr
+            # "layer"
             if (abs(t[0].layer - pos.layer) <= 1) and (abs(t[0].x - pos.x) <=1 ) and (abs(t[0].y - pos.y) <= 1) and (t[0] != pos):
                 neighbors = dict(neighbors, **dict(t))
                 # edges tracks the number of sides of a space that are in contact with the "edge" of the colon (i.e. on the outer surface of the colon wall)
@@ -152,10 +161,10 @@ class Colon:
         plt.savefig(file_name) """
 
 # Implementation goes here
-c = Colon(500, 500, 500, 100, 100, 0.3, 0.85)
+c = Colon(10, 10, 10, 10, 10, 0.3, 0.85)
 c.populate()
 # What is "r"???
 # dispatcher.connect(doAction, signal="r", sender=c.sender)
 # TODO: Write method that returns true if at least one E. coli object is alive in colon
-for i in xrange(iterations):
+for i in xrange(c.iterations):
     dispatcher.send(sender=c.sender)
